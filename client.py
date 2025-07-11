@@ -83,6 +83,32 @@ def send_logs(logs):
             logging.error(f'{LOGS_URL} {e}')
 
 
+def get_processes_snapshot():
+    timestamp = datetime.datetime.now(datetime.UTC).isoformat()
+    processes = []
+    for process in psutil.process_iter(['pid', 'name', 'status', 'cpu_percent', 'memory_percent']):
+        processes.append({
+            'pid': process.info['pid'],
+            'name': process.info['name'],
+            'status': process.info['status'],
+            'cpu_usage': process.info['cpu_percent'],
+            'memory_usage': process.info['memory_percent'],
+        })
+    return {
+        'timestamp': timestamp,
+        'processes': processes
+    }
+
+
+def send_processes_snapshot(processes_snapshot):
+    if processes_snapshot['processes']:
+        try:
+            response = requests.post(API_URL + '/processes-snapshots', json=processes_snapshot)
+            logging.info(f'{API_URL}/processes-snapshots {response.status_code} {response.json()}')
+        except Exception as e:
+            logging.error(f'{API_URL}/processes-snapshots {e}')
+
+
 last_position = 0
 
 while True:
@@ -92,5 +118,8 @@ while True:
     logs, last_position = get_logs(last_position)
     if logs:
         send_logs(logs)
+
+    processes_snapshots = get_processes_snapshot()
+    send_processes_snapshot(processes_snapshots)
 
     time.sleep(1)

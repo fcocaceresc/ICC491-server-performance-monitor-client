@@ -213,4 +213,4 @@ __marimo__/
 
 .env
 
-.log
+client.log*
