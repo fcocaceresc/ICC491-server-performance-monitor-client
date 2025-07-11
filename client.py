@@ -1,6 +1,8 @@
 import datetime
+import logging
 import os
 import time
+from logging.handlers import RotatingFileHandler
 
 import psutil
 import requests
@@ -10,6 +12,13 @@ load_dotenv()
 
 API_URL = os.getenv('API_URL')
 LOGS_FILE_PATH = os.getenv('LOGS_FILE_PATH')
+
+SYSTEM_METRICS_URL = API_URL + '/system-metrics'
+LOGS_URL = API_URL + '/logs'
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+log_handler = RotatingFileHandler('client.log', maxBytes=10 * 1024 * 1024, backupCount=1)
+logging.getLogger().addHandler(log_handler)
 
 
 def get_system_metrics():
@@ -24,7 +33,8 @@ def get_system_metrics():
 
 
 def send_system_metrics(metrics):
-    requests.post(API_URL + '/system-metrics', json=metrics)
+    response = requests.post(SYSTEM_METRICS_URL, json=metrics)
+    logging.info(f'{SYSTEM_METRICS_URL} {response.status_code} {response.json()}')
 
 
 def get_logs(last_position=0):
@@ -63,7 +73,8 @@ def parse_log_line(line):
 
 def send_logs(logs):
     if logs:
-        requests.post(API_URL + '/logs', json=logs)
+        response = requests.post(LOGS_URL, json=logs)
+        logging.info(f'{LOGS_URL} {response.status_code} {response.json()}')
 
 
 last_position = 0
