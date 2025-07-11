@@ -33,8 +33,11 @@ def get_system_metrics():
 
 
 def send_system_metrics(metrics):
-    response = requests.post(SYSTEM_METRICS_URL, json=metrics)
-    logging.info(f'{SYSTEM_METRICS_URL} {response.status_code} {response.json()}')
+    try:
+        response = requests.post(SYSTEM_METRICS_URL, json=metrics)
+        logging.info(f'{SYSTEM_METRICS_URL} {response.status_code} {response.json()}')
+    except Exception as e:
+        logging.error(f'{SYSTEM_METRICS_URL} {e}')
 
 
 def get_logs(last_position=0):
@@ -73,8 +76,11 @@ def parse_log_line(line):
 
 def send_logs(logs):
     if logs:
-        response = requests.post(LOGS_URL, json=logs)
-        logging.info(f'{LOGS_URL} {response.status_code} {response.json()}')
+        try:
+            response = requests.post(LOGS_URL, json=logs)
+            logging.info(f'{LOGS_URL} {response.status_code} {response.json()}')
+        except Exception as e:
+            logging.error(f'{LOGS_URL} {e}')
 
 
 last_position = 0
